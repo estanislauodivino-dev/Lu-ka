@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lu K</title>
+<style>
+body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; font-size:16px; line-height:1.5;}
+header { background:#003366; color:white; padding:1rem; display:flex; justify-content:space-between; align-items:center; position:relative;}
+header h1 { margin:0; font-size:1.8rem; }
+.menu-btn { display:none; flex-direction:column; cursor:pointer; width:30px; height:22px; justify-content:space-between; }
+.menu-btn span { display:block; height:4px; background:white; border-radius:2px; transition:0.3s; }
+nav { display:none; flex-direction:column; background:#003366; position:absolute; top:60px; right:0; width:200px; padding:1rem; border-radius:0 0 0 10px; }
+nav a, nav button { color:white; text-decoration:none; margin:0.5rem 0; font-size:1rem; background:none; border:none; cursor:pointer; text-align:left; }
+section { display:none; background:white; margin:1rem; padding:1rem; border-radius:8px; }
+h2 { margin-top:0; color:#003366; }
+h3 { margin:0.5rem 0; }
+input, textarea, select, button { width:100%; padding:0.6rem; margin:0.5rem 0; border-radius:4px; border:1px solid #ccc; box-sizing:border-box; }
+button { background:#003366; color:white; border:none; cursor:pointer; }
+.curso { background:#eee; padding:0.8rem; border-radius:6px; margin:0.5rem 0; }
+.modulo { background:#ddd; padding:0.5rem; border-radius:4px; margin:0.3rem 0; cursor:pointer; }
+.moduloConteudo { display:none; background:#ccc; padding:0.5rem; margin-top:0.2rem; border-radius:4px; }
+.copiar-btn { display:inline-block; margin-left:0.5rem; padding:0.2rem 0.5rem; background:#ff6600; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem; }
+footer { text-align:center; padding:1rem; background:#ddd; margin-top:1rem; }
+@media(max-width:768px){ header h1{font-size:1.5rem;} nav{width:150px; padding:0.5rem;} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Lu K Cursos Online</h1>
+  <div class="menu-btn" id="menu-btn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <nav id="menu"></nav>
+</header>
+
+<!-- LOGIN -->
+<section id="login">
+  <h2>Login</h2>
+  <input type="email" id="loginEmail" placeholder="Email">
+  <input type="password" id="loginSenha" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+  <p id="msgLogin"></p>
+  <p>Não tem cadastro? <a href="#" onclick="mostrarCadastro()">Clique aqui</a></p>
+</section>
+
+<!-- CADASTRO -->
+<section id="cadastro">
+  <h2>Cadastro</h2>
+  <input type="text" id="cadNome" placeholder="Nome">
+  <input type="email" id="cadEmail" placeholder="Email">
+  <input type="password" id="cadSenha" placeholder="Senha">
+  <button onclick="cadastrar()">Cadastrar</button>
+  <p id="msgCadastro"></p>
+  <button onclick="voltarLogin()">Voltar para Login</button>
+</section>
+
+<!-- PAINEL ADMIN -->
+<section id="admin">
+  <h2>Painel do Administrador</h2>
+
+  <h3>Adicionar Curso</h3>
+  <input type="text" id="cursoNome" placeholder="Nome do curso">
+  <input type="text" id="cursoPreco" placeholder="Preço">
+  <input type="text" id="numeroPagamento" placeholder="Número Multicaixa Express" value="932704592">
+  <h4>Módulos</h4>
+  <div id="modulosContainer">
+    <div class="moduloInput">
+      <input type="text" class="modTitulo" placeholder="Título do módulo">
+      <textarea class="modConteudo" placeholder="Conteúdo ou link"></textarea>
+      <button onclick="removerModuloInput(this)">Remover módulo</button>
+    </div>
+  </div>
+  <button onclick="adicionarModuloInput()">Adicionar módulo</button>
+  <button onclick="salvarCurso()">Salvar Curso</button>
+
+  <h3>Cursos Existentes</h3>
+  <div id="cursosAdmin"></div>
+
+  <h3>Pagamentos Pendentes</h3>
+  <div id="pagamentosPendentesContainer"></div>
+
+  <h3>Atualizações & Políticas</h3>
+  <textarea id="atualizacoes" placeholder="Escreva as atualizações, política de privacidade..." rows="5"></textarea>
+  <button onclick="salvarAtualizacoes()">Salvar Atualizações</button>
+
+  <button onclick="logout()">Logout</button>
+</section>
+
+<!-- CURSOS DISPONÍVEIS -->
+<section id="cursos">
+  <h2>Cursos Disponíveis</h2>
+  <div id="listaCursos"></div>
+  <h3>Atualizações & Política de Privacidade</h3>
+  <div id="infoAtualizacoes"></div>
+</section>
+
+<!-- MEUS CURSOS -->
+<section id="meus-cursos">
+  <h2>Meus Cursos</h2>
+  <div id="meusCursos"></div>
+</section>
+
+<!-- INSTITUIÇÃO -->
+<section id="instituicao">
+  <h2>Instituição</h2>
+  <p>Aqui você pode adicionar informações sobre a instituição, missão, história e valores.</p>
+</section>
+
+<!-- CONTATO -->
+<section id="contacto">
+  <h2>Contato</h2>
+  <form action="https://formspree.io/f/mnjnnbzn" method="POST">
+    <input type="text" name="nome" placeholder="Seu nome" required>
+    <input type="email" name="email" placeholder="Seu email" required>
+    <textarea name="mensagem" placeholder="Mensagem" required></textarea>
+    <button type="submit">Enviar</button>
+  </form>
+</section>
+
+<footer>© 2026 – Lu K Cursos Online. Todos os direitos reservados.</footer>
+
+<script>
+const ADMIN_EMAIL="divinooficial0@gmail.com";
+const ADMIN_SENHA="922629";
+const EXPRESS="932704592";
+
+let usuarios=JSON.parse(localStorage.getItem("usuarios"))||[];
+let usuarioAtual=JSON.parse(localStorage.getItem("usuarioAtual"))||null;
+let cursos=JSON.parse(localStorage.getItem("cursos"))||[];
+let pagamentosPendentes=JSON.parse(localStorage.getItem("pagamentosPendentes"))||[];
+let atualizacoes=JSON.parse(localStorage.getItem("atualizacoes"))||"";
+
+const menuBtn=document.getElementById("menu-btn");
+const menu=document.getElementById("menu");
+
+function esconderSections(){ document.querySelectorAll("section").forEach(s=>s.style.display="none"); }
+function mostrarCadastro(){ esconderSections(); document.getElementById("cadastro").style.display="block"; }
+function voltarLogin(){ esconderSections(); document.getElementById("login").style.display="block"; }
+function abrirSecao(id){ esconderSections(); document.getElementById(id).style.display="block"; menu.style.display="none"; }
+
+menuBtn.addEventListener("click", ()=>{ menu.style.display = menu.style.display==="flex"?"none":"flex"; });
+
+function atualizarMenu(){
+  menu.innerHTML="";
+  if(usuarioAtual && usuarioAtual.email===ADMIN_EMAIL){
+    menu.innerHTML+=`<a href="#" onclick="abrirSecao('admin')">Painel Admin</a>`;
+  } else {
+    menu.innerHTML+=`<a href="#" onclick="abrirSecao('cursos')">Cursos</a>`;
+    menu.innerHTML+=`<a href="#" onclick="abrirSecao('meus-cursos')">Meus Cursos</a>`;
+    menu.innerHTML+=`<a href="#" onclick="abrirSecao('instituicao')">Instituição</a>`;
+    menu.innerHTML+=`<a href="#" onclick="abrirSecao('contacto')">Contato</a>`;
+  }
+  menu.innerHTML+=`<button onclick="logout()">Logout</button>`;
+}
+
+function login(){
+  const email=document.getElementById("loginEmail").value;
+  const senha=document.getElementById("loginSenha").value;
+
+  if(email===ADMIN_EMAIL && senha===ADMIN_SENHA){
+    usuarioAtual={email:ADMIN_EMAIL,nome:"Administrador"}; 
+    localStorage.setItem("usuarioAtual", JSON.stringify(usuarioAtual));
+    esconderSections(); 
+    document.getElementById("admin").style.display="block";
+    menuBtn.style.display="flex"; 
+    atualizarMenu();
+    renderCursosAdmin(); 
+    renderPagamentosPendentes(); 
+    return;
+  }
+
+  const usuario=usuarios.find(u=>u.email===email && u.senha===senha);
+  if(!usuario){ document.getElementById("msgLogin").textContent="Email ou senha incorretos"; return; }
+
+  usuarioAtual=usuario;
+  if(!usuarioAtual.cursosLiberados) usuarioAtual.cursosLiberados=[];
+  localStorage.setItem("usuarioAtual",JSON.stringify(usuarioAtual));
+  esconderSections();
+  document.getElementById("cursos").style.display="block";
+  document.getElementById("meus-cursos").style.display="block";
+  menuBtn.style.display="flex";
+  atualizarMenu();
+  renderCursos();
+}
+
+function cadastrar(){
+  const nome=document.getElementById("cadNome").value;
+  const email=document.getElementById("cadEmail").value;
+  const senha=document.getElementById("cadSenha").value;
+  if(usuarios.find(u=>u.email===email)){ document.getElementById("msgCadastro").textContent="Email já cadastrado"; return; }
+  const usuario={nome,email,senha,cursosLiberados:[]};
+  usuarios.push(usuario);
+  localStorage.setItem("usuarios",JSON.stringify(usuarios));
+  document.getElementById("msgCadastro").textContent="Cadastro feito! Faça login.";
+}
+
+function logout(){
+  usuarioAtual=null; localStorage.removeItem("usuarioAtual");
+  menuBtn.style.display="none"; esconderSections(); document.getElementById("login").style.display="block";
+}
+
+// --- Admin Cursos ---
+function adicionarModuloInput(){
+  const container=document.getElementById("modulosContainer");
+  const div=document.createElement("div"); div.className="moduloInput";
+  div.innerHTML=`<input type="text" class="modTitulo" placeholder="Título do módulo">
+    <textarea class="modConteudo" placeholder="Conteúdo ou link"></textarea>
+    <button onclick="removerModuloInput(this)">Remover módulo</button>`;
+  container.appendChild(div);
+}
+function removerModuloInput(btn){ btn.parentElement.remove(); }
+
+function salvarCurso(){
+  const nome=document.getElementById("cursoNome").value;
+  const preco=document.getElementById("cursoPreco").value;
+  const numero=document.getElementById("numeroPagamento").value;
+  const titulos=Array.from(document.getElementsByClassName("modTitulo")).map(i=>i.value);
+  const conteudos=Array.from(document.getElementsByClassName("modConteudo")).map(i=>i.value);
+  const modulos=titulos.map((t,i)=>({titulo:t,conteudo:conteudos[i]}));
+  cursos.push({nome,preco,numero,modulos,liberado:false});
+  localStorage.setItem("cursos",JSON.stringify(cursos));
+  alert("Curso salvo!");
+  renderCursosAdmin();
+  renderCursos();
+}
+
+function renderCursosAdmin(){
+  const container=document.getElementById("cursosAdmin");
+  container.innerHTML="";
+  cursos.forEach((c,i)=>{
+    const div=document.createElement("div"); div.className="curso";
+    div.innerHTML=`<b>${c.nome}</b> - ${c.preco} Kz
+      <button onclick="toggleLiberar(${i})">${c.liberado?"Bloquear":"Liberar"}</button>`;
+    container.appendChild(div);
+  });
+}
+
+function toggleLiberar(i){ cursos[i].liberado=!cursos[i].liberado; localStorage.setItem("cursos",JSON.stringify(cursos)); renderCursosAdmin(); renderCursos(); }
+
+// --- Pagamentos ---
+function renderCursos(){
+  const lista=document.getElementById("listaCursos"); lista.innerHTML="";
+  const meus=document.getElementById("meusCursos"); meus.innerHTML="";
+  cursos.forEach((c,i)=>{
+    if(c.liberado){
+      const div=document.createElement("div"); div.className="curso";
+      div.innerHTML=`<b>${c.nome}</b> - ${c.preco} Kz
+        <button onclick="mostrarPagamento(${i})">Pagamento</button>
+        <div id="pag-${i}" style="display:none; margin-top:0.5rem; background:#eee; padding:0.5rem; border-radius:4px;">
+          <span>Número Express: <b id="num-${i}">${c.numero}</b></span>
+          <button class="copiar-btn" onclick="copiarNumero('num-${i}')">Copiar</button>
+          <p>Faça a transferência e envie o comprovante.</p>
+          <input type="file" id="comprovante-${i}">
+          <button onclick="solicitarPagamento(${i})">Enviar Comprovante</button>
+        </div>`;
+      lista.appendChild(div);
+    }
+  });
+
+  // Meus cursos liberados
+  if(usuarioAtual.cursosLiberados.length>0){
+    usuarioAtual.cursosLiberados.forEach(cn=>{
+      const c=cursos.find(x=>x.nome===cn); if(!c) return;
+      const div=document.createElement("div"); div.className="curso";
+      div.innerHTML=`<b>${c.nome}</b>`;
+      c.modulos.forEach((m,idx)=>{
+        div.innerHTML+=`<div class="modulo" onclick="toggleModulo(this)"><b>${m.titulo}</b>
+          <div class="moduloConteudo">${m.conteudo}</div></div>`;
+      });
+      meus.appendChild(div);
+    });
+  } else{ meus.innerHTML="<p>Você ainda não tem cursos liberados.</p>"; }
+
+  // Exibir atualizações e política
+  document.getElementById("infoAtualizacoes").innerHTML=atualizacoes || "<p>Sem atualizações.</p>";
+}
+
+function toggleModulo(el){
+  const conteudo=el.querySelector(".moduloConteudo");
+  if(conteudo) conteudo.style.display = conteudo.style.display==="none"?"block":"none";
+}
+
+function mostrarPagamento(i){
+  const div=document.getElementById(`pag-${i}`);
+  div.style.display=div.style.display==="none"?"block":"none";
+}
+
+function copiarNumero(id){
+  const n=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(n).then(()=>alert("Número copiado: "+n));
+}
+
+function solicitarPagamento(i){
+  const c=cursos[i];
+  const inputFile = document.getElementById(`comprovante-${i}`);
+  if(!inputFile.files.length){ alert("Selecione um comprovante!"); return; }
+  const pagamento = {
+    aluno: usuarioAtual.nome,
+    email: usuarioAtual.email,
+    curso: c.nome,
+    status: "pendente",
+    arquivo: inputFile.files[0].name
+  };
+  pagamentosPendentes.push(pagamento);
+  localStorage.setItem("pagamentosPendentes", JSON.stringify(pagamentosPendentes));
+  alert("Comprovante enviado! Aguarde liberação do administrador.");
+  renderPagamentosPendentes();
+}
+
+function renderPagamentosPendentes(){
+  const container=document.getElementById("pagamentosPendentesContainer");
+  container.innerHTML="<h3>Pagamentos Pendentes</h3>";
+  pagamentosPendentes.forEach((p,i)=>{
+    if(p.status==="pendente"){
+      const div=document.createElement("div"); div.className="curso";
+      div.innerHTML=`Aluno: ${p.aluno} <br> Curso: ${p.curso} <br> Comprovante: ${p.arquivo}
+        <button onclick="aprovarPagamento(${i})">Aprovar</button>
+        <button onclick="rejeitarPagamento(${i})">Rejeitar</button>`;
+      container.appendChild(div);
+    }
+  });
+}
+
+function aprovarPagamento(i){
+  const p = pagamentosPendentes[i];
+  const usuario = usuarios.find(u=>u.email===p.email);
+  if(usuario && !usuario.cursosLiberados.includes(p.curso)){
+    usuario.cursosLiberados.push(p.curso);
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+  }
+  pagamentosPendentes[i].status="aprovado";
+  localStorage.setItem("pagamentosPendentes", JSON.stringify(pagamentosPendentes));
+  alert("Pagamento aprovado! Curso liberado.");
+  renderPagamentosPendentes();
+  renderCursos();
+}
+
+function rejeitarPagamento(i){
+  pagamentosPendentes[i].status="rejeitado";
+  localStorage.setItem("pagamentosPendentes", JSON.stringify(pagamentosPendentes));
+  alert("Pagamento rejeitado!");
+  renderPagamentosPendentes();
+}
+
+// --- Atualizações e Política ---
+function salvarAtualizacoes(){
+  const texto=document.getElementById("atualizacoes").value;
+  atualizacoes=texto;
+  localStorage.setItem("atualizacoes", JSON.stringify(atualizacoes));
+  alert("Atualizações salvas!");
+  renderCursos();
+}
+
+// --- Auto login ---
+window.onload=function(){
+  if(usuarioAtual){ 
+    menuBtn.style.display="flex"; 
+    atualizarMenu();
+    if(usuarioAtual.email===ADMIN_EMAIL) abrirSecao("admin");
+    else abrirSecao("cursos");
+    renderCursos();
+  }
+  else abrirSecao("login");
+}
+</script>
+
